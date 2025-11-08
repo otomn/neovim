@@ -216,11 +216,15 @@ local function get_locations(method, opts)
 
         vim.bo[b].buflisted = true
         local w = win
-        if opts.reuse_win then
+        if opts.reuse_win and vim.api.nvim_win_get_buf(w) ~= b then
           w = vim.fn.win_findbuf(b)[1] or w
-          if w ~= win then
-            api.nvim_set_current_win(w)
+          for _, tw in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+            if vim.api.nvim_win_get_buf(tw) == b then
+              w = tw
+              break
+            end
           end
+          api.nvim_set_current_win(w)
         end
         api.nvim_win_set_buf(w, b)
         api.nvim_win_set_cursor(w, { item.lnum, item.col - 1 })
