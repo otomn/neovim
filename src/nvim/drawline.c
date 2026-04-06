@@ -1960,16 +1960,22 @@ int win_line(win_T *wp, linenr_T lnum, int startrow, int endrow, int col_rows, b
         }
       } else if (search_attr != 0) {
         char_attr_pri = hl_combine_attr(wlv.line_attr, search_attr);
-      } else if (wlv.line_attr != 0
-                 && ((wlv.fromcol == -10 && wlv.tocol == MAXCOL)
-                     || wlv.vcol < wlv.fromcol
-                     || vcol_prev < fromcol_prev
-                     || wlv.vcol >= wlv.tocol)) {
-        // Use wlv.line_attr when not in the Visual or 'incsearch' area
-        // (area_attr may be 0 when "noinvcur" is set).
-        char_attr_pri = wlv.line_attr;
       } else {
-        char_attr_pri = 0;
+        HlAttrs extmark_ae = syn_attr2entry(extmark_attr);
+        if (extmark_attr != 0 
+          && (extmark_ae.rgb_bg_color != -1 || extmark_ae.cterm_bg_color != 0)) {
+          char_attr_pri = hl_combine_attr(wlv.line_attr, extmark_attr);
+        } else if (wlv.line_attr != 0
+                   && ((wlv.fromcol == -10 && wlv.tocol == MAXCOL)
+                       || wlv.vcol < wlv.fromcol
+                       || vcol_prev < fromcol_prev
+                       || wlv.vcol >= wlv.tocol)) {
+          // Use wlv.line_attr when not in the Visual or 'incsearch' area
+          // (area_attr may be 0 when "noinvcur" is set).
+          char_attr_pri = wlv.line_attr;
+        } else {
+          char_attr_pri = 0;
+        }
       }
       char_attr_base = hl_combine_attr(folded_attr, decor_attr);
       wlv.char_attr = hl_combine_attr(char_attr_base, char_attr_pri);
